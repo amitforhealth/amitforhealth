@@ -16,6 +16,8 @@ SECTIONS = [
      ["deep-pockets-shallow-breaths", "the-sales-model-nobody-changed", "the-ethics-of-influence"]),
     ("doctors", "When doctors are attacked", "A three-part series on violence against India's doctors, and who really pays for it.",
      ["the-wages-of-fear", "the-poster-will-not-save-you", "the-man-who-beat-his-own-hospital"]),
+    ("trials", "Reading the trials", "The big respiratory trials, recalculated: absolute numbers, NNTs, and how fragile the headline claims really are.",
+     ["impact-recalculated", "fulfil-recalculated"]),
 ]
 START_HERE = "the-breath-india-keeps-losing"
 COL = {}
@@ -90,7 +92,7 @@ FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="p
 def index_html(posts, link):
     sh = posts[START_HERE]
     parts = []
-    parts.append(f'''<header class="top"><a href="#subscribe">subscribe</a> · <a href="{link('feed')}">rss</a> · <a href="{LINKEDIN}" rel="noopener">linkedin</a></header>
+    parts.append(f'''<header class="top"><a class="brand" href="/" aria-label="AmitForHealth home">{LOGO}</a><span><a href="#subscribe">subscribe</a> · <a href="{link('feed')}">rss</a> · <a href="{LINKEDIN}" rel="noopener">linkedin</a></span></header>
 <section class="hero">
 <h1>Every breath is a right.</h1>
 <p>Personal site and notebook of <a href="{link('#about')}">Amit Kumar</a>. Twenty-six years in Indian respiratory medicine, ten of them at Cipla and sixteen building <a href="{BAYU}" rel="noopener">Bayu Healthcare</a>.</p>
@@ -131,7 +133,7 @@ def post_html(posts, slug, link, order):
         nav += f'<a class="prev" href="{link(prv)}"><span>Previous</span>{esc(posts[prv]["title"])}</a>' if prv else "<span></span>"
         nav += f'<a class="next" href="{link(nxt)}"><span>Next in {esc(sec[1])}</span>{esc(posts[nxt]["title"])}</a>' if nxt else "<span></span>"
         nav += "</nav>"
-    return f'''<header class="top"><a href="{link('')}">← Amit Kumar</a> · <a href="#subscribe">subscribe</a></header>
+    return f'''<header class="top"><a class="brand" href="/" aria-label="AmitForHealth home">{LOGO}</a><span><a href="{link('')}">all essays</a> · <a href="#subscribe">subscribe</a></span></header>
 <article class="post col{COL[slug]}">
 <p class="kicker"><a href="{link('#' + sec[0])}">{esc(sec[1])}</a></p>
 <h1>{esc(p['title'])}</h1>
@@ -148,6 +150,9 @@ def post_html(posts, slug, link, order):
 FAVICON = "data:image/svg+xml," + "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='4' width='5' height='24' fill='%23112f41'/%3E%3Crect x='10' y='8' width='5' height='20' fill='%23b58427'/%3E%3Crect x='17' y='12' width='5' height='16' fill='%2347ab6c'/%3E%3Crect x='24' y='6' width='5' height='22' fill='%23ed553b'/%3E%3C/svg%3E"
 
 
+import hashlib
+CSS_VER = hashlib.md5(CSS.encode()).hexdigest()[:8]
+LOGO = open(os.path.join(ROOT, "assets", "brand", "logo-wordmark.svg")).read().replace("<svg ", '<svg class="logo" role="img" ', 1)
 FEED_XSL = open(os.path.join(ROOT, "assets", "feed.xsl")).read()
 
 
@@ -156,6 +161,11 @@ def build_static(posts):
         shutil.rmtree(OUT)
     os.makedirs(f"{OUT}/essays")
     open(f"{OUT}/style.css", "w").write(CSS)
+    for fn in os.listdir(f"{ROOT}/assets/img"):
+        shutil.copy(f"{ROOT}/assets/img/{fn}", f"{OUT}/{fn}")
+    for fn in os.listdir(f"{ROOT}/assets/brand"):
+        shutil.copy(f"{ROOT}/assets/brand/{fn}", f"{OUT}/{fn}")
+    open(f"{OUT}/site.webmanifest", "w").write('{"name":"AmitForHealth","short_name":"AmitForHealth","icons":[{"src":"/icon-192.png","sizes":"192x192","type":"image/png"},{"src":"/icon-512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#ffffff","background_color":"#ffffff","display":"browser"}')
 
     def link(target):
         if target == "":
@@ -166,23 +176,23 @@ def build_static(posts):
             return "/" + target
         return f"/essays/{target}"
 
-    def page(title, desc, body, path, kind="website"):
+    def page(title, desc, body, path, kind="website", img="og-og-default.png"):
         url = SITE_URL + path
         return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title><meta name="description" content="{esc(desc)}">
-<link rel="canonical" href="{url}"><link rel="icon" href="{FAVICON}">
+<link rel="canonical" href="{url}"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">
 <link rel="alternate" type="application/rss+xml" title="AmitForHealth" href="/feed.xml">
-<meta property="og:type" content="{kind}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(desc)}"><meta property="og:url" content="{url}"><meta property="og:site_name" content="AmitForHealth"><meta name="twitter:card" content="summary">
+<meta property="og:type" content="{kind}"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(desc)}"><meta property="og:url" content="{url}"><meta property="og:site_name" content="AmitForHealth"><meta property="og:image" content="{SITE_URL}/{img}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{SITE_URL}/{img}">
 <meta name="author" content="Amit Kumar">
-{FONTS}<link rel="stylesheet" href="/style.css"></head>
+{FONTS}<link rel="stylesheet" href="/style.css?v={CSS_VER}"></head>
 <body><main class="wrap">{body}</main></body></html>'''
 
     open(f"{OUT}/index.html", "w").write(page("Amit Kumar · AmitForHealth",
         "Personal site and notebook of Amit Kumar: essays on respiratory care, pharma sales, marketing and analytics in India.",
         index_html(posts, link), "/"))
     for s, p in posts.items():
-        open(f"{OUT}/essays/{s}.html", "w").write(page(f"{p['title']} · Amit Kumar", p["dek"], post_html(posts, s, link, None), f"/essays/{s}", "article"))
+        open(f"{OUT}/essays/{s}.html", "w").write(page(f"{p['title']} · Amit Kumar", p["dek"], post_html(posts, s, link, None), f"/essays/{s}", "article", f"og-{s}.png"))
     open(f"{OUT}/404.html", "w").write(page("Page not found · AmitForHealth", "Page not found",
         f'<header class="top"><a href="/">← Amit Kumar</a></header><article class="post col4"><h1>This page took a deep breath and vanished.</h1><p class="dek">The link may be old or mistyped.</p><p><a href="/">Go to all essays</a></p></article>', "/404"))
     # RSS

@@ -106,3 +106,14 @@ h1,h2,h3{text-wrap:balance; line-height:1.25}
 .sub-note a{color:var(--muted)}
 .sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
 .top a + a{margin-left:0}
+
+/* Header with logo */
+.top{display:flex; align-items:center; justify-content:space-between; gap:1rem; text-align:left}
+.top .brand{display:inline-flex; line-height:0}
+.top .logo{height:28px; width:auto}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .top .logo path:not([fill^="#"]), :root:not([data-theme="light"]) .top .logo path{fill:var(--ink)}}
+:root[data-theme="dark"] .top .logo path{fill:var(--ink)}
+@media (max-width:480px){ .top .logo{height:24px} }
+
+/* Figures */
+.body p > img{display:block; width:100%; height:auto; border:1px solid var(--rule); border-radius:4px; background:#fff; margin:1.4rem 0 .4rem}
