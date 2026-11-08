@@ -24,6 +24,22 @@ for _sec in SECTIONS:
     for _s in _sec[3]:
         COL[_s] = _i % 5; _i += 1
 LINKEDIN = "https://www.linkedin.com/in/amitforhealth"
+BUTTONDOWN = "amitforhealth"
+
+
+def subscribe_box(idsuffix=""):
+    return f'''<section class="subscribe col3" id="subscribe{idsuffix}">
+<h2>Get the monthly email</h2>
+<p>One email a month with new essays and field reports from Indian healthcare. No spam; unsubscribe any time.</p>
+<form action="https://buttondown.com/api/emails/embed-subscribe/{BUTTONDOWN}" method="post" class="sub-form">
+<label for="bd-email{idsuffix}" class="sr">Email address</label>
+<input type="email" name="email" id="bd-email{idsuffix}" placeholder="you@example.com" required autocomplete="email">
+<input type="hidden" value="1" name="embed">
+<button type="submit">Subscribe</button>
+</form>
+<p class="sub-note">Prefer a feed reader? <a href="/feed.xml">RSS</a></p>
+</section>'''
+
 BAYU = "https://www.bayuhealthcare.com"
 
 
@@ -74,7 +90,7 @@ FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="p
 def index_html(posts, link):
     sh = posts[START_HERE]
     parts = []
-    parts.append(f'''<header class="top"><a href="{link('feed')}">rss</a> · <a href="{LINKEDIN}" rel="noopener">linkedin</a></header>
+    parts.append(f'''<header class="top"><a href="#subscribe">subscribe</a> · <a href="{link('feed')}">rss</a> · <a href="{LINKEDIN}" rel="noopener">linkedin</a></header>
 <section class="hero">
 <h1>Every breath is a right.</h1>
 <p>Personal site and notebook of <a href="{link('#about')}">Amit Kumar</a>. Twenty-six years in Indian respiratory medicine, ten of them at Cipla and sixteen building <a href="{BAYU}" rel="noopener">Bayu Healthcare</a>.</p>
@@ -91,6 +107,7 @@ def index_html(posts, link):
         parts.append(f'<div class="group" id="{key}"><h3>{esc(name)}</h3><p class="blurb">{esc(blurb)}</p><ul>{items}</ul></div>')
     total = sum(len(s[3]) for s in SECTIONS)
     parts.append(f'<p class="count">{total} essays, written for doctors, pharma leaders, policymakers and anyone who has watched a family member struggle to breathe.</p></section>')
+    parts.append(subscribe_box())
     parts.append(f'''<section class="about col1" id="about">
 <h2>About</h2>
 <p>I'm Amit Kumar, co-founder and director of Bayu Healthcare, a respiratory-focused pharmaceutical company based in Lucknow and working across Uttar Pradesh, Bihar, Jharkhand and Madhya Pradesh. Before Bayu I spent a formative decade at Cipla, helping build its respiratory division.</p>
@@ -114,7 +131,7 @@ def post_html(posts, slug, link, order):
         nav += f'<a class="prev" href="{link(prv)}"><span>Previous</span>{esc(posts[prv]["title"])}</a>' if prv else "<span></span>"
         nav += f'<a class="next" href="{link(nxt)}"><span>Next in {esc(sec[1])}</span>{esc(posts[nxt]["title"])}</a>' if nxt else "<span></span>"
         nav += "</nav>"
-    return f'''<header class="top"><a href="{link('')}">← Amit Kumar</a></header>
+    return f'''<header class="top"><a href="{link('')}">← Amit Kumar</a> · <a href="#subscribe">subscribe</a></header>
 <article class="post col{COL[slug]}">
 <p class="kicker"><a href="{link('#' + sec[0])}">{esc(sec[1])}</a></p>
 <h1>{esc(p['title'])}</h1>
@@ -123,11 +140,15 @@ def post_html(posts, slug, link, order):
 <div class="body">{render_body(p['body_md'], link)}</div>
 </article>
 <section class="signoff"><p><strong>Amit Kumar</strong> is co-founder of Bayu Healthcare and has spent twenty-six years in Indian respiratory medicine. Disagree, or have a field story to share? <a href="{LINKEDIN}" rel="noopener">Write to me on LinkedIn</a>.</p></section>
+{subscribe_box()}
 {nav}
 <footer class="foot"><a href="{link('')}">All essays</a> · © {datetime.date.today().year} Amit Kumar<br>Personal views, not those of Bayu Healthcare. Nothing on this site is medical advice; please talk to your doctor.</footer>'''
 
 
 FAVICON = "data:image/svg+xml," + "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='4' width='5' height='24' fill='%23112f41'/%3E%3Crect x='10' y='8' width='5' height='20' fill='%23b58427'/%3E%3Crect x='17' y='12' width='5' height='16' fill='%2347ab6c'/%3E%3Crect x='24' y='6' width='5' height='22' fill='%23ed553b'/%3E%3C/svg%3E"
+
+
+FEED_XSL = open(os.path.join(ROOT, "assets", "feed.xsl")).read()
 
 
 def build_static(posts):
@@ -168,7 +189,8 @@ def build_static(posts):
     items = sorted(posts.values(), key=lambda p: p["date"], reverse=True)
     def rfc(d): return datetime.datetime(d.year, d.month, d.day, 9, 0).strftime("%a, %d %b %Y %H:%M:%S +0530")
     rss = "".join(f"<item><title>{esc(p['title'])}</title><link>{SITE_URL}/essays/{p['slug']}</link><guid>{SITE_URL}/essays/{p['slug']}</guid><pubDate>{rfc(p['date'])}</pubDate><description>{esc(p['dek'])}</description></item>" for p in items)
-    open(f"{OUT}/feed.xml", "w").write(f'<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>AmitForHealth</title><link>{SITE_URL}/</link><description>Essays by Amit Kumar on respiratory care and the business of Indian pharma.</description><language>en-in</language>{rss}</channel></rss>')
+    open(f"{OUT}/feed.xsl", "w").write(FEED_XSL)
+    open(f"{OUT}/feed.xml", "w").write(f'<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="/feed.xsl"?><rss version="2.0"><channel><title>AmitForHealth</title><link>{SITE_URL}/</link><description>Essays by Amit Kumar on respiratory care and the business of Indian pharma.</description><language>en-in</language>{rss}</channel></rss>')
     urls = [SITE_URL + "/"] + [f"{SITE_URL}/essays/{s}" for s in posts]
     open(f"{OUT}/sitemap.xml", "w").write('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>{u}</loc></url>" for u in urls) + "</urlset>")
     open(f"{OUT}/robots.txt", "w").write(f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n")

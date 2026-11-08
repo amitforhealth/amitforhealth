@@ -92,3 +92,17 @@ h1,h2,h3{text-wrap:balance; line-height:1.25}
   .pn{grid-template-columns:1fr}
   .pn .next{text-align:left; border-right:0; border-left:5px solid var(--c4); padding-left:10px; padding-right:0}
 }
+
+/* Newsletter sign-up */
+.subscribe{margin-top:3rem; padding:1.1rem 1.2rem; border-left:5px solid var(--c); background:var(--tint)}
+.subscribe h2{font-family:var(--sans); font-weight:700; font-size:1.25rem; margin:0 0 .35rem}
+.subscribe p{margin:0 0 .8rem; font-size:1rem; line-height:1.5}
+.sub-form{display:flex; flex-wrap:wrap; gap:.5rem}
+.sub-form input[type=email]{flex:1 1 14rem; min-width:0; font:inherit; font-size:1rem; padding:.6rem .75rem; border:1px solid var(--rule); border-radius:4px; background:var(--bg); color:var(--ink)}
+.sub-form input[type=email]:focus{outline:2px solid var(--c3); outline-offset:1px}
+.sub-form button{font-family:var(--sans); font-weight:700; font-size:1rem; padding:.6rem 1.1rem; border:0; border-radius:4px; background:var(--c0); color:#fff; cursor:pointer}
+.sub-form button:hover{background:var(--c3)}
+.sub-note{font-family:var(--sans); font-size:.85rem !important; color:var(--muted); margin:.7rem 0 0 !important}
+.sub-note a{color:var(--muted)}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+.top a + a{margin-left:0}
